@@ -1,0 +1,5 @@
+if(EXISTS "/home/runner/work/boost_mpl_graph_bfs/boost_mpl_graph_bfs/_codeql_build_dir/tests/bfs_tests[1]_tests.cmake")
+  include("/home/runner/work/boost_mpl_graph_bfs/boost_mpl_graph_bfs/_codeql_build_dir/tests/bfs_tests[1]_tests.cmake")
+else()
+  add_test(bfs_tests_NOT_BUILT bfs_tests_NOT_BUILT)
+endif()
