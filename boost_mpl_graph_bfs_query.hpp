@@ -58,7 +58,7 @@ struct route_finder_visitor : mpl_graph::bfs_default_visitor_operations {
     // examine a new vertex (after already been discovered earlier)
     // if not yet found, push to path stack
     template<typename Vertex, typename Graph, typename State>
-    struct examine_vertex : mpl::if_<mpl::not_<typename State::second::second>::type,
+    struct examine_vertex : mpl::if_<mpl::not_<typename State::second::second>,
         // if not found - push to path stack, leave metadata unchanged
         mpl::pair<
             typename mpl::push_back<typename State::first, Vertex>::type,
@@ -70,7 +70,7 @@ struct route_finder_visitor : mpl_graph::bfs_default_visitor_operations {
 
     // first time we encounter a new vertex
     template<typename Vertex, typename Graph, typename State>
-    struct discover_vertex : mpl::if_<boost::is_same<Vertex, typename State::second::first>::type,
+    struct discover_vertex : mpl::if_<boost::is_same<Vertex, typename State::second::first>,
         // if found - set found flag to true and push to path stack
         mpl::pair<
             typename mpl::push_back<typename State::first, Vertex>::type,
@@ -102,8 +102,8 @@ struct bfs_route_finder : mpl_graph::breadth_first_search<
 // Helper type to extract whether a route was found
 // TODO: add a concept on the type of QueryResult
 template <typename QueryResult>
-using bfs_route_found_t = mpl::second<mpl::second<QueryResult>::type>::type;
+using bfs_route_found_t = typename mpl::second<typename mpl::second<QueryResult>::type>::type;
 
 // Helper type to extract the route path
 template <typename QueryResult>
-using bfs_route_path_t = mpl::first<QueryResult>::type;
+using bfs_route_path_t = typename mpl::first<QueryResult>::type;
