@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "constexpr_graph_bfs.hpp"
+#include "constexpr_graph_bfs_query.hpp"
 
 enum Node { A, B, C, D, E, F, G };
 static constexpr size_t NodeCount = G + 1;

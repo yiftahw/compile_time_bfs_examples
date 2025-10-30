@@ -1,20 +1,23 @@
 cmake_minimum_required(VERSION 3.14)
-project(boost_mpl_graph_bfs VERSION 1.0.0 LANGUAGES CXX)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+project(compile_time_graph_shortest_path VERSION 1.0.0 LANGUAGES CXX)
 
 # Set C++ standard
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Find Boost
 find_package(Boost REQUIRED)
 
 # Add include directory for the header-only library
-add_library(boost_mpl_graph_bfs INTERFACE)
-target_include_directories(boost_mpl_graph_bfs INTERFACE
+add_library(compile_time_graph_shortest_path INTERFACE)
+target_include_directories(compile_time_graph_shortest_path INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<INSTALL_INTERFACE:include>
 )
-target_link_libraries(boost_mpl_graph_bfs INTERFACE Boost::boost)
+target_link_libraries(compile_time_graph_shortest_path INTERFACE Boost::boost)
 
 # Testing
 option(BUILD_TESTING "Build tests" ON)

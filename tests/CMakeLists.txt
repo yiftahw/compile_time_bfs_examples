@@ -5,7 +5,7 @@ add_executable(bfs_tests
 
 target_link_libraries(bfs_tests
     PRIVATE
-    boost_mpl_graph_bfs
+    compile_time_graph_shortest_path
     GTest::gtest_main
 )
 
