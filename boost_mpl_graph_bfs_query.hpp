@@ -30,12 +30,12 @@ typedef mpl::vector<
 typedef mpl_graph::incidence_list_graph<my_graph_data_type> my_graph_type;
 
 // best route from A to F is A -> B -> F and NOT A -> B -> C -> F
-typedef mpl::first<bfs_route_finder<my_graph_type, A, F>::type>::type route_A_to_F;
+typedef bfs_route_finder<my_graph_type, A, F>::type route_A_to_F;
 BOOST_MPL_ASSERT((boost::is_same<bfs_route_found_t<route_A_to_F>, mpl::true_>));
 BOOST_MPL_ASSERT((boost::is_same<bfs_route_path_t<route_A_to_F>, mpl::vector3<A, B, F>>));
 
 // there is no route from A to G
-typedef mpl::first<bfs_route_finder<my_graph_type, A, G>::type>::type route_A_to_G;
+typedef bfs_route_finder<my_graph_type, A, G>::type route_A_to_G;
 BOOST_MPL_ASSERT((boost::is_same<bfs_route_found_t<route_A_to_G>, mpl::false_>));
 */
 
@@ -87,23 +87,36 @@ struct route_finder_visitor : mpl_graph::bfs_default_visitor_operations {
  * routes from a source node to a target node within a given graph structure. It uses
  * a route_finder_visitor to track the search progress and maintain state during traversal.
  * 
- * @tparam Graph The graph type to search within
- * @tparam SourceNode The starting node for the route search
- * @tparam TargetNode The destination node for the route search
+ * Usage:
+ *   typedef bfs_route_finder<my_graph_type, A, F>::type route_A_to_F;
+ *   BOOST_MPL_ASSERT((boost::is_same<bfs_route_found_t<route_A_to_F>, mpl::true_>));
+ *   BOOST_MPL_ASSERT((boost::is_same<bfs_route_path_t<route_A_to_F>, mpl::vector3<A, B, F>>));
+ * 
+ * @tparam Graph The graph type to search within (must be a valid mpl_graph type)
+ * @tparam SourceNode The starting node for the route search (must be a vertex in Graph)
+ * @tparam TargetNode The destination node for the route search (must be a vertex in Graph)
  */
 template <typename Graph, typename SourceNode, typename TargetNode>
-struct bfs_route_finder : mpl_graph::breadth_first_search<
-    Graph,
-    route_finder_visitor<TargetNode>,
-    typename route_finder_visitor<TargetNode>::StateType,
-    SourceNode
-> {};
+struct bfs_route_finder {
+private:
+    using base_result = typename mpl_graph::breadth_first_search<
+        Graph,
+        route_finder_visitor<TargetNode>,
+        typename route_finder_visitor<TargetNode>::StateType,
+        SourceNode
+    >::type;
+    
+public:
+    // Automatically extract the first element to simplify API usage
+    using type = typename mpl::first<base_result>::type;
+};
 
 // Helper type to extract whether a route was found
-// TODO: add a concept on the type of QueryResult
+// QueryResult should be the result type from bfs_route_finder<...>::type
 template <typename QueryResult>
-using bfs_route_found_t = mpl::second<mpl::second<QueryResult>::type>::type;
+using bfs_route_found_t = typename mpl::second<typename mpl::second<QueryResult>::type>::type;
 
 // Helper type to extract the route path
+// QueryResult should be the result type from bfs_route_finder<...>::type
 template <typename QueryResult>
-using bfs_route_path_t = mpl::first<QueryResult>::type;
+using bfs_route_path_t = typename mpl::first<QueryResult>::type;
