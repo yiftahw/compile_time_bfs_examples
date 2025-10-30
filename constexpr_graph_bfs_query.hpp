@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdio>
+#include <span>
 
 template <typename Node, typename Meta>
 struct Edge {
@@ -50,6 +51,10 @@ struct BFSResult {
     std::array<Edge<Node, Meta>, MaxEdges> path{};
     size_t length = 0;
     bool found = false;
+
+    constexpr auto view() const {
+        return std::span(path.data(), length);
+    }
 };
 
 // ---------- constexpr BFS ----------
