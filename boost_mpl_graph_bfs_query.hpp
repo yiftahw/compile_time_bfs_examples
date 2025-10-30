@@ -30,12 +30,12 @@ typedef mpl::vector<
 typedef mpl_graph::incidence_list_graph<my_graph_data_type> my_graph_type;
 
 // best route from A to F is A -> B -> F and NOT A -> B -> C -> F
-typedef mpl::first<bfs_route_finder<my_graph_type, A, F>::type>::type route_A_to_F;
+typedef mpl::at_c<bfs_route_finder<my_graph_type, A, F>::type, 0>::type route_A_to_F;
 BOOST_MPL_ASSERT((boost::is_same<bfs_route_found_t<route_A_to_F>, mpl::true_>));
 BOOST_MPL_ASSERT((boost::is_same<bfs_route_path_t<route_A_to_F>, mpl::vector3<A, B, F>>));
 
 // there is no route from A to G
-typedef mpl::first<bfs_route_finder<my_graph_type, A, G>::type>::type route_A_to_G;
+typedef mpl::at_c<bfs_route_finder<my_graph_type, A, G>::type, 0>::type route_A_to_G;
 BOOST_MPL_ASSERT((boost::is_same<bfs_route_found_t<route_A_to_G>, mpl::false_>));
 */
 
@@ -50,19 +50,21 @@ namespace mpl = boost::mpl;
 template<typename TargetNode>
 struct route_finder_visitor : mpl_graph::bfs_default_visitor_operations {
     using StateType = 
-        mpl::pair<
+        mpl::vector<
             mpl::vector<>, // path stack
-            mpl::pair<TargetNode, mpl::false_> // target node and found flag
+            TargetNode,    // target node
+            mpl::false_    // found flag
         >;
 
     // examine a new vertex (after already been discovered earlier)
     // if not yet found, push to path stack
     template<typename Vertex, typename Graph, typename State>
-    struct examine_vertex : mpl::if_<mpl::not_<typename State::second::second>::type,
+    struct examine_vertex : mpl::if_<mpl::not_<typename mpl::at_c<State, 2>::type>::type,
         // if not found - push to path stack, leave metadata unchanged
-        mpl::pair<
-            typename mpl::push_back<typename State::first, Vertex>::type,
-            typename State::second
+        mpl::vector<
+            typename mpl::push_back<typename mpl::at_c<State, 0>::type, Vertex>::type,
+            typename mpl::at_c<State, 1>::type,
+            typename mpl::at_c<State, 2>::type
         >,
         // if found - do nothing
         State
@@ -70,11 +72,13 @@ struct route_finder_visitor : mpl_graph::bfs_default_visitor_operations {
 
     // first time we encounter a new vertex
     template<typename Vertex, typename Graph, typename State>
-    struct discover_vertex : mpl::if_<boost::is_same<Vertex, typename State::second::first>::type,
+    struct discover_vertex : mpl::if_<boost::is_same<Vertex, typename mpl::at_c<State, 1>::type>::type,
         // if found - set found flag to true and push to path stack
-        mpl::pair<
-            typename mpl::push_back<typename State::first, Vertex>::type,
-            mpl::pair<typename State::second::first, mpl::true_>>,
+        mpl::vector<
+            typename mpl::push_back<typename mpl::at_c<State, 0>::type, Vertex>::type,
+            typename mpl::at_c<State, 1>::type,
+            mpl::true_
+        >,
         // if not found - do nothing
         State
     > {};
@@ -102,8 +106,8 @@ struct bfs_route_finder : mpl_graph::breadth_first_search<
 // Helper type to extract whether a route was found
 // TODO: add a concept on the type of QueryResult
 template <typename QueryResult>
-using bfs_route_found_t = mpl::second<mpl::second<QueryResult>::type>::type;
+using bfs_route_found_t = mpl::at_c<QueryResult, 2>::type;
 
 // Helper type to extract the route path
 template <typename QueryResult>
-using bfs_route_path_t = mpl::first<QueryResult>::type;
+using bfs_route_path_t = mpl::at_c<QueryResult, 0>::type;
