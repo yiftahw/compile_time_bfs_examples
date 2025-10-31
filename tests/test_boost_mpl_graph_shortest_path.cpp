@@ -46,25 +46,20 @@ typedef mpl_graph::incidence_list_graph<my_graph_data_type> my_graph_type;
 
 // Test that a route exists from A to F and is the shortest path A -> B -> F
 TEST(BFSRouteFinderTest, RouteFromAToFExists) {
-    typedef mpl::first<bfs_route_finder<my_graph_type, A, F>::type>::type route_A_to_F;
+    using route_A_to_F = bfs_route_query_result_t<my_graph_type, A, F>;
     
     // Check that route was found
-    constexpr bool route_found = std::is_same<bfs_route_found_t<route_A_to_F>, mpl::true_>::value;
-    EXPECT_TRUE(route_found);
+    static_assert(bfs_route_found_v<route_A_to_F>);
     
-    // Check that the path has 3 elements (A, B, F)
-    typedef bfs_route_path_t<route_A_to_F> path_type;
-    constexpr int path_size = mpl::size<path_type>::value;
-    EXPECT_EQ(path_size, 3);
-    
-    // Check individual elements in the path
-    constexpr bool first_is_A = std::is_same<typename mpl::at_c<path_type, 0>::type, A>::value;
-    constexpr bool second_is_B = std::is_same<typename mpl::at_c<path_type, 1>::type, B>::value;
-    constexpr bool third_is_F = std::is_same<typename mpl::at_c<path_type, 2>::type, F>::value;
-    
-    EXPECT_TRUE(first_is_A);
-    EXPECT_TRUE(second_is_B);
-    EXPECT_TRUE(third_is_F);
+    // Check that the path has 3 elements
+    constexpr auto path_size = bfs_route_length_v<route_A_to_F>;
+    static_assert(path_size == 3);
+
+    // Check that the route is actually A -> B -> F
+    using path_type = bfs_route_path_t<route_A_to_F>;
+    static_assert(std::is_same<typename mpl::at_c<path_type, 0>::type, A>::value);
+    static_assert(std::is_same<typename mpl::at_c<path_type, 1>::type, B>::value);
+    static_assert(std::is_same<typename mpl::at_c<path_type, 2>::type, F>::value);
 }
 
 // Test that no route exists from A to G (G is disconnected)
