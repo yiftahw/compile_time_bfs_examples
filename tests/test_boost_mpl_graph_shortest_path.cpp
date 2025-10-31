@@ -1,9 +1,11 @@
+#include <type_traits>
+
 #include <gtest/gtest.h>
-#include "boost_mpl_graph_bfs_query.hpp"
 #include <boost/mpl/vector.hpp>
 #include <boost/mpl/size.hpp>
 #include <boost/mpl/at.hpp>
-#include <type_traits>
+
+#include "boost_mpl_graph_shortest_path.hpp"
 
 // Define the test graph structure from the example in the header
 // adjacency list test graph:
