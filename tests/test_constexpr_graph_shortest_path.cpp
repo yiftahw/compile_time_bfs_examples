@@ -28,3 +28,8 @@ TEST(ConstexprBFS, RouteAtoF) {
     static_assert(route_A_to_F.length == 2);
     static_assert(compare_routes(route_A_to_F, std::array{A, B, F})); // 3 nodes are covered in 2 edges
 }
+
+TEST(ConstexprBFS, NoRouteAtoG) {
+    constexpr auto route_A_to_G = bfs_edges<NodeCount>(edges, A, G);
+    static_assert(!route_A_to_G.found);
+}
