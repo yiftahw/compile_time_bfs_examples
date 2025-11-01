@@ -1,10 +1,11 @@
 add_executable(bfs_tests
-    test_bfs_route_finder.cpp
+    test_boost_mpl_graph_shortest_path.cpp
+    test_constexpr_graph_shortest_path.cpp
 )
 
 target_link_libraries(bfs_tests
     PRIVATE
-    boost_mpl_graph_bfs
+    compile_time_graph_shortest_path
     GTest::gtest_main
 )
 

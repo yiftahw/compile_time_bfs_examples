@@ -99,10 +99,20 @@ struct bfs_route_finder : mpl_graph::breadth_first_search<
     SourceNode
 > {};
 
+template <typename Graph, typename SourceNode, typename TargetNode>
+using bfs_route_query_result_t = typename mpl::first<typename bfs_route_finder<Graph, SourceNode, TargetNode>::type>::type;
+
 // Helper type to extract whether a route was found
 // TODO: add a concept on the type of QueryResult
 template <typename QueryResult>
 using bfs_route_found_t = typename mpl::second<typename mpl::second<QueryResult>::type>::type;
+
+// Extract the value of whether a route was found
+template <typename QueryResult>
+constexpr auto bfs_route_found_v = bfs_route_found_t<QueryResult>::value;
+
+template <typename QueryResult>
+constexpr auto bfs_route_length_v = mpl::size<typename mpl::first<QueryResult>::type>::value;
 
 // Helper type to extract the route path
 template <typename QueryResult>
