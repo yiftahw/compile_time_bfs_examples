@@ -76,6 +76,19 @@ constexpr bool compare_routes(const BFSResult<EdgeType, MaxEdges>& a,
     return true;
 }
 
+template <typename EdgeType, size_t MaxEdges, size_t RouteLength>
+requires EdgeConcept<EdgeType>
+constexpr bool compare_routes(const BFSResult<EdgeType, MaxEdges>& a,
+                          const std::array<EdgeType, RouteLength>& b) {
+    if (a.length != RouteLength) return false;
+    for (size_t i = 0; i < a.length; ++i) {
+        if (a.path[i].src != b[i].src || a.path[i].dst != b[i].dst) {
+            return false;
+        }
+    }
+    return true;
+}
+
 // ---------- constexpr BFS ----------
 template <size_t NumNodes, typename EdgeType, size_t NumEdges>
     requires EdgeConcept<EdgeType>

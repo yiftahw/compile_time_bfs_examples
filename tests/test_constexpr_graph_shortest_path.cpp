@@ -26,7 +26,12 @@ TEST(ConstexprBFS, RouteAtoF) {
     constexpr auto route_A_to_F = bfs_edges<NodeCount>(edges, A, F);
     static_assert(route_A_to_F.found);
     static_assert(route_A_to_F.length == 2);
-    static_assert(compare_routes(route_A_to_F, std::array{A, B, F})); // 3 nodes are covered in 2 edges
+    
+    // Test by vertex sequence
+    static_assert(compare_routes(route_A_to_F, std::array{A, B, F}));
+
+    // Test by edge sequence
+    static_assert(compare_routes(route_A_to_F, std::array<Edge, 2>{{{A, B}, {B, F}}}));
 }
 
 TEST(ConstexprBFS, NoRouteAtoG) {
