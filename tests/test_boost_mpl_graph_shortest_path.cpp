@@ -18,14 +18,23 @@
 
 
 // vertices
-struct A{}; 
-struct B{}; 
-struct C{}; 
-struct D{}; 
-struct E{}; 
-struct F{}; 
-struct G{};
-struct H{};
+// struct A{}; 
+// struct B{}; 
+// struct C{}; 
+// struct D{}; 
+// struct E{}; 
+// struct F{}; 
+// struct G{};
+// struct H{};
+#define VERTEX(name) struct name { using type = name; }
+VERTEX(A);
+VERTEX(B);
+VERTEX(C);
+VERTEX(D);
+VERTEX(E);
+VERTEX(F);
+VERTEX(G);
+VERTEX(H);
 
 // edges
 struct A_B{};
@@ -109,25 +118,39 @@ TEST(BFSRouteFinderTest, MplGraphSourceTarget) {
 }
 
 // // no route from A to G
-// TEST(BFSRouteFinderTest, NoRouteFromAToG) {
-//     using route_A_to_G = bfs_route_query_result_t<my_graph_type, A, G>;
-//     // Check that route was not found
-//     static_assert(!bfs_route_found_v<route_A_to_G>);
-// }
-
-// TEST(BFSRouteFinderTest, TestRouteFromAtoH) {
-//     using graph_edges_t = mpl::vector<
-//         EDGE(A,B),
-//         EDGE(B,D),
-//         EDGE(D,F)
-//     >;
-//     using graph_t = mpl_graph::incidence_list_graph<graph_edges_t>;
-
-//     using query_result_t = bfs_route_query_result_t<graph_t, A, F>;
+TEST(BFSRouteFinderTest, NoRouteFromAToG) {
+    using route_A_to_G = typename bfs_route_query_result_t<my_graph_type, A, G>::type;
     
-//     using mapping = bfs_parent_map_t<query_result_t>;
-//     static_assert(boost::is_same<typename mpl::at<mapping, A>::type, mpl::void_>::value);
-//     static_assert(boost::is_same<typename mpl::at<mapping, B>::type, A>::value);
-//     static_assert(boost::is_same<typename mpl::at<mapping, D>::type, B>::value);
-//     static_assert(boost::is_same<typename mpl::at<mapping, F>::type, D>::value);
-// }
+    using route_found_type = bfs_route_found_t<route_A_to_G>;
+    static constexpr bool found = bfs_route_found_v<route_A_to_G>;
+    static_assert(!found);
+
+    using route_type = bfs_route_path_t<route_A_to_G>;
+    static constexpr auto route_length = bfs_route_length_v<route_A_to_G>;
+
+    using parent_map_type = bfs_parent_map_t<route_A_to_G>;
+
+    // using parent_map = bfs_parent_map_t<route_A_to_G>;
+    // using route = bfs_route_path_t<route_A_to_G>;
+    // static constexpr auto route_size = bfs_route_length_v<route_A_to_G>;
+    // // Check that route was not found
+    // static_assert(!bfs_route_found_v<route_A_to_G>);
+}
+
+TEST(BFSRouteFinderTest, TestRouteFromAtoH) {
+    using graph_edges_t = mpl::vector<
+        EDGE(A,B),
+        EDGE(B,D),
+        EDGE(D,F)
+    >;
+    using graph_t = mpl_graph::incidence_list_graph<graph_edges_t>;
+    using query_result_t = bfs_route_query_result_t<graph_t, A, F>;
+
+    static_assert(bfs_route_found_v<query_result_t>, "Route from A to F should be found");
+    
+    // using mapping = bfs_parent_map_t<query_result_t>;
+    // static_assert(boost::is_same<typename mpl::at<mapping, A>::type, mpl::void_>::value);
+    // static_assert(boost::is_same<typename mpl::at<mapping, B>::type, A>::value);
+    // static_assert(boost::is_same<typename mpl::at<mapping, D>::type, B>::value);
+    // static_assert(boost::is_same<typename mpl::at<mapping, F>::type, D>::value);
+}

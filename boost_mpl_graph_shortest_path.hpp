@@ -82,37 +82,48 @@ struct route_finder_visitor : mpl_graph::bfs_default_visitor_operations {
             mpl::false_    // did we find our target?
         >;
 
+    template <typename Edge, typename Graph>
+    using src_t = typename mpl_graph::source<Edge, Graph>::type;
+
+    template <typename Edge, typename Graph>
+    using dst_t = typename mpl_graph::target<Edge, Graph>::type;
+
+    template<typename Edge, typename Graph, typename ParentMap>
+    struct insert_parent_t {
+        using type = typename mpl::insert<ParentMap, mpl::pair<dst_t<Edge, Graph>, src_t<Edge, Graph>>>::type;
+    };
+
     // tree edge (i.e an edge that connects to a vertex we didn't discover yet)
     // it means that this edge's source vertex is the fastest way to get to it's destination vertex
     // mark it as it's parent.
-    template<typename Edge, typename Graph, typename State>
-    struct tree_edge : mpl::if_<
-        typename State::item3,
-        // if already found - do nothing
-        State,
-        // else - update parent map
-        mpl::vector4<
-            typename State::item0, // route isn't changed here
-            typename mpl::insert<  // update parent map
-                typename State::item1, 
-                typename mpl_graph::target<Edge, Graph>::type, 
-                typename mpl_graph::source<Edge, Graph>::type
-            >::type,
-            typename State::item2, // target node unchanged
-            typename State::item3  // found flag unchanged
-        >
-    > {};
+    // template<typename Edge, typename Graph, typename State>
+    // struct tree_edge : mpl::if_<
+    //     typename State::item3,
+    //     // if already found - do nothing
+    //     State,
+    //     // else - update parent map
+    //     mpl::vector4<
+    //         typename State::item0, // route isn't changed here
+    //         typename mpl::insert<  // update parent map
+    //             typename State::item1, 
+    //             typename mpl_graph::target<Edge, Graph>::type, 
+    //             typename mpl_graph::source<Edge, Graph>::type
+    //         >::type,
+    //         typename State::item2, // target node unchanged
+    //         typename State::item3  // found flag unchanged
+    //     >
+    // > {};
 
     // first time we encounter a new vertex
     // if it's the target vertex - it means we found the fastest route to it
     template<typename Vertex, typename Graph, typename State>
     struct discover_vertex : mpl::if_<
-        boost::is_same<Vertex, typename State::item2>,
+        boost::is_same<Vertex, typename mpl::at_c<State,2>::type>,
         // if found - set found flag to true and push to path stack
         mpl::vector4<
-            typename backtrack<Vertex, typename State::item1>::type, // backtrack to build the route
-            typename State::item1, // parent mapping unchanged
-            typename State::item2,  // target node unchanged
+            typename backtrack<Vertex, typename mpl::at_c<State,1>::type>::type, // backtrack to build the route
+            typename mpl::at_c<State,1>::type, // parent mapping unchanged
+            typename mpl::at_c<State,2>::type,  // target node unchanged
             mpl::true_              // set found flag to true
         >,
         // if not found - do nothing
@@ -142,21 +153,21 @@ struct bfs_route_finder : mpl_graph::breadth_first_search<
 template <typename Graph, typename SourceNode, typename TargetNode>
 using bfs_route_query_result_t = typename mpl::first<typename bfs_route_finder<Graph, SourceNode, TargetNode>::type>::type;
 
-// Helper type to extract whether a route was found
-// TODO: add a concept on the type of QueryResult
+// // Helper type to extract whether a route was found
+// // TODO: add a concept on the type of QueryResult
 template <typename QueryResult>
-using bfs_route_found_t = typename QueryResult::item3;
+using bfs_route_found_t = typename mpl::at_c<QueryResult, 3>::type;
 
-// Extract the value of whether a route was found
+// // Extract the value of whether a route was found
 template <typename QueryResult>
 constexpr auto bfs_route_found_v = bfs_route_found_t<QueryResult>::value;
 
-// Helper type to extract the route path
+// // Helper type to extract the route path
 template <typename QueryResult>
-using bfs_route_path_t = typename QueryResult::item0;
+using bfs_route_path_t = typename mpl::at_c<QueryResult, 0>::type;
 
 template <typename QueryResult>
 constexpr auto bfs_route_length_v = mpl::size<bfs_route_path_t<QueryResult>>::value;
 
 template <typename QueryResult>
-using bfs_parent_map_t = typename QueryResult::item1;
+using bfs_parent_map_t = typename mpl::at_c<QueryResult, 1>::type;
