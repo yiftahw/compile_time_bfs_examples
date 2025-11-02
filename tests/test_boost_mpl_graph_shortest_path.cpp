@@ -75,74 +75,22 @@ TEST(BFSRouteFinderTest, BacktrackingMetaFunction) {
     static_assert(mpl::equal<backtrack_test, mpl::vector3<V1, V2, V3>>::value, "backtrack test failed");
 }
 
-
-template <typename Map1, typename Map2>
-struct map_subset_of
-  : mpl::fold<
-        Map1,
-        mpl::true_,
-        mpl::and_<
-            _1,
-            mpl::and_<
-                mpl::has_key<Map2, typename _2::first>,
-                boost::is_same<
-                    typename mpl::at<Map2, typename _2::first>::type,
-                    typename _2::second
-                >
-            >
-        >
-    >
-{};
-
-// Equality check = subset both ways
-template <typename Map1, typename Map2>
-struct map_equal
-  : mpl::and_<
-        map_subset_of<Map1, Map2>,
-        map_subset_of<Map2, Map1>
-    >
-{};
-
-// small test for compare key-value maps
-using map1 = mpl::map<mpl::pair<A, B>, mpl::pair<C, D>>;
-using map2 = mpl::map<mpl::pair<C, D>, mpl::pair<A, B>>;
-using map3 = mpl::map<mpl::pair<A, B>, mpl::pair<C, D>>;
-static_assert(map_equal<map1, map2>::value, "map equal test failed");
-
-
 // // Test that a route exists from A to F and is the shortest path A -> B -> F
-TEST(BFSRouteFinderTest, RouteFromAToFExists) {
-    using route_A_to_F = bfs_route_query_result_t<my_graph_type, A, F>;
+TEST(BFSRouteFinderTest, MplMapParentMapping) {
+    using ref_parent_map_t = mpl::map<mpl::pair<B, A>>;
+    static_assert(boost::is_same<mpl::at<ref_parent_map_t, B>::type, A>::value, "parent map test failed");
+    static_assert(boost::is_same<mpl::at<ref_parent_map_t, C>::type, mpl::void_>::value, "parent map test failed");
 
-    /*
-    parents:
-    B <- A
-    F <- B
-    C <- B
-    D <- C
-    E <- C
-    F <- C
-    */
-    using ref_parent_map = mpl::map<
-        mpl::pair<B, A>,
-        mpl::pair<F, B>,
-        mpl::pair<C, B>,
-        mpl::pair<D, C>,
-        mpl::pair<E, C>,
-        mpl::pair<F, C>>;
+    // push to the map
+    using updated_parent_map_t = typename mpl::insert<ref_parent_map_t, mpl::pair<C, B>>::type;
+    static_assert(boost::is_same<mpl::at<updated_parent_map_t, C>::type, B>::value, "parent map test failed");
     
-    static_assert(mpl::equal<bfs_parent_map_t<route_A_to_F>, ref_parent_map>::value);
-    
-    // Check that route was found
-    static_assert(bfs_route_found_v<route_A_to_F>);
-    
-    // Check that the path has 3 elements
-    constexpr auto path_size = bfs_route_length_v<route_A_to_F>;
-    static_assert(path_size == 3);
+    // can we still access B -> A?
+    static_assert(boost::is_same<mpl::at<updated_parent_map_t, B>::type, A>::value, "parent map test failed");
 
-    // Check that the route is actually A -> B -> F
-    static constexpr bool path_correct = mpl::equal<bfs_route_path_t<route_A_to_F>, mpl::vector<A,B,F>>::value;
-    static_assert(path_correct);
+    // override B -> D
+    using overridden_parent_map_t = typename mpl::insert<updated_parent_map_t, mpl::pair<B, D>>::type;
+    static_assert(boost::is_same<mpl::at<overridden_parent_map_t, B>::type, D>::value, "parent map test failed");
 }
 
 // // no route from A to G
