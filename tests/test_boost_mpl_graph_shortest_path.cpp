@@ -93,6 +93,21 @@ TEST(BFSRouteFinderTest, MplMapParentMapping) {
     static_assert(boost::is_same<mpl::at<overridden_parent_map_t, B>::type, D>::value, "parent map test failed");
 }
 
+// test mpl_graph::target and mpl_graph::source
+TEST(BFSRouteFinderTest, MplGraphSourceTarget) {
+    using graph_edges_t = mpl::vector<
+       mpl::vector<A_B, A, B>,
+       mpl::vector<B_D, B, D>,
+       mpl::vector<D_F, D, F>
+    >;
+    using graph_t = mpl_graph::incidence_list_graph<graph_edges_t>;
+
+    using edge_AB_source = typename mpl_graph::source<A_B, graph_t>::type;
+    using edge_AB_target = typename mpl_graph::target<A_B, graph_t>::type;
+    static_assert(boost::is_same<edge_AB_source, A>::value, "mpl_graph source test failed");
+    static_assert(boost::is_same<edge_AB_target, B>::value, "mpl_graph target test failed");
+}
+
 // // no route from A to G
 // TEST(BFSRouteFinderTest, NoRouteFromAToG) {
 //     using route_A_to_G = bfs_route_query_result_t<my_graph_type, A, G>;
@@ -100,20 +115,19 @@ TEST(BFSRouteFinderTest, MplMapParentMapping) {
 //     static_assert(!bfs_route_found_v<route_A_to_G>);
 // }
 
-// TEST(BFSRouteFinderTest, Test2) {
-//     using graph_2_edges_t = mpl::vector<
+// TEST(BFSRouteFinderTest, TestRouteFromAtoH) {
+//     using graph_edges_t = mpl::vector<
 //         EDGE(A,B),
 //         EDGE(B,D),
-//         EDGE(D,F),
-//         EDGE(F,H),
-//         EDGE(A,C),
-//         EDGE(C,E),
-//         EDGE(E,G)
+//         EDGE(D,F)
 //     >;
-//     using graph_2_t = mpl_graph::incidence_list_graph<graph_2_edges_t>;
+//     using graph_t = mpl_graph::incidence_list_graph<graph_edges_t>;
 
-//     using route_A_to_H = bfs_route_query_result_t<graph_2_t, A, H>;
-//     static_assert(bfs_route_found_v<route_A_to_H>);
-//     using route = bfs_route_path_t<route_A_to_H>;
-//     static_assert(mpl::equal<route, mpl::vector<A,B,D,F,H>>::value);
+//     using query_result_t = bfs_route_query_result_t<graph_t, A, F>;
+    
+//     using mapping = bfs_parent_map_t<query_result_t>;
+//     static_assert(boost::is_same<typename mpl::at<mapping, A>::type, mpl::void_>::value);
+//     static_assert(boost::is_same<typename mpl::at<mapping, B>::type, A>::value);
+//     static_assert(boost::is_same<typename mpl::at<mapping, D>::type, B>::value);
+//     static_assert(boost::is_same<typename mpl::at<mapping, F>::type, D>::value);
 // }
