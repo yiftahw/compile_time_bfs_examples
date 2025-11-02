@@ -18,23 +18,14 @@
 
 
 // vertices
-// struct A{}; 
-// struct B{}; 
-// struct C{}; 
-// struct D{}; 
-// struct E{}; 
-// struct F{}; 
-// struct G{};
-// struct H{};
-#define VERTEX(name) struct name { using type = name; }
-VERTEX(A);
-VERTEX(B);
-VERTEX(C);
-VERTEX(D);
-VERTEX(E);
-VERTEX(F);
-VERTEX(G);
-VERTEX(H);
+struct A{};
+struct B{};
+struct C{};
+struct D{};
+struct E{};
+struct F{};
+struct G{};
+struct H{};
 
 // edges
 struct A_B{};
@@ -153,4 +144,22 @@ TEST(BFSRouteFinderTest, TestRoute1) {
 
     static constexpr auto route_length = bfs_route_length_v<query_result_t>;
     static_assert(route_length == 4);
+}
+
+TEST(BFSRouteFinderTest, Test2) {
+    using graph_2_edges_t = mpl::vector<
+        EDGE(A,B),
+        EDGE(B,D),
+        EDGE(D,F),
+        EDGE(F,H),
+        EDGE(A,C),
+        EDGE(C,E),
+        EDGE(E,G)
+    >;
+    using graph_2_t = mpl_graph::incidence_list_graph<graph_2_edges_t>;
+
+    using route_A_to_H = bfs_route_query_result_t<graph_2_t, A, H>;
+    static_assert(bfs_route_found_v<route_A_to_H>);
+    using route = bfs_route_path_t<route_A_to_H>;
+    static_assert(mpl::equal<route, mpl::vector<A,B,D,F,H>>::value);
 }
