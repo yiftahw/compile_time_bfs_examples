@@ -89,30 +89,27 @@ struct route_finder_visitor : mpl_graph::bfs_default_visitor_operations {
     using dst_t = typename mpl_graph::target<Edge, Graph>::type;
 
     template<typename Edge, typename Graph, typename ParentMap>
-    struct insert_parent_t {
-        using type = typename mpl::insert<ParentMap, mpl::pair<dst_t<Edge, Graph>, src_t<Edge, Graph>>>::type;
-    };
+    struct insert_parent_t : mpl::insert<
+        ParentMap, 
+        mpl::pair<dst_t<Edge, Graph>, src_t<Edge, Graph>>
+    >::type {};
 
     // tree edge (i.e an edge that connects to a vertex we didn't discover yet)
     // it means that this edge's source vertex is the fastest way to get to it's destination vertex
     // mark it as it's parent.
-    // template<typename Edge, typename Graph, typename State>
-    // struct tree_edge : mpl::if_<
-    //     typename State::item3,
-    //     // if already found - do nothing
-    //     State,
-    //     // else - update parent map
-    //     mpl::vector4<
-    //         typename State::item0, // route isn't changed here
-    //         typename mpl::insert<  // update parent map
-    //             typename State::item1, 
-    //             typename mpl_graph::target<Edge, Graph>::type, 
-    //             typename mpl_graph::source<Edge, Graph>::type
-    //         >::type,
-    //         typename State::item2, // target node unchanged
-    //         typename State::item3  // found flag unchanged
-    //     >
-    // > {};
+    template<typename Edge, typename Graph, typename State>
+    struct tree_edge : mpl::if_<
+        typename mpl::at_c<State, 3>::type,
+        // if already found - do nothing
+        State,
+        // else - update parent map
+        mpl::vector4<
+            typename mpl::at_c<State, 0>::type, // route isn't changed here
+            typename insert_parent_t<Edge, Graph, typename mpl::at_c<State,1>::type>::type, // update parent map
+            typename mpl::at_c<State, 2>::type, // target node unchanged
+            typename mpl::at_c<State, 3>::type  // found flag unchanged
+        >
+    > {};
 
     // first time we encounter a new vertex
     // if it's the target vertex - it means we found the fastest route to it

@@ -137,7 +137,7 @@ TEST(BFSRouteFinderTest, NoRouteFromAToG) {
     // static_assert(!bfs_route_found_v<route_A_to_G>);
 }
 
-TEST(BFSRouteFinderTest, TestRouteFromAtoH) {
+TEST(BFSRouteFinderTest, TestRoute1) {
     using graph_edges_t = mpl::vector<
         EDGE(A,B),
         EDGE(B,D),
@@ -147,10 +147,10 @@ TEST(BFSRouteFinderTest, TestRouteFromAtoH) {
     using query_result_t = bfs_route_query_result_t<graph_t, A, F>;
 
     static_assert(bfs_route_found_v<query_result_t>, "Route from A to F should be found");
-    
-    // using mapping = bfs_parent_map_t<query_result_t>;
-    // static_assert(boost::is_same<typename mpl::at<mapping, A>::type, mpl::void_>::value);
-    // static_assert(boost::is_same<typename mpl::at<mapping, B>::type, A>::value);
-    // static_assert(boost::is_same<typename mpl::at<mapping, D>::type, B>::value);
-    // static_assert(boost::is_same<typename mpl::at<mapping, F>::type, D>::value);
+
+    using route_t = bfs_route_path_t<query_result_t>;
+    static_assert(mpl::equal<route_t, mpl::vector4<A, B, D, F>>::value, "Route from A to F should be A -> B -> D -> F");
+
+    static constexpr auto route_length = bfs_route_length_v<query_result_t>;
+    static_assert(route_length == 4);
 }
